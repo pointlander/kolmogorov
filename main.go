@@ -40,6 +40,8 @@ func main() {
 				index++
 			}
 		}
+		a := bytes.Buffer{}
+		compress.Mark1Compress1(vector[:4*64], &a)
 		for j, entry := range datum.Bezdek {
 			index := 4 * 64
 			for _, value := range entry.Measures {
@@ -50,9 +52,14 @@ func main() {
 					index++
 				}
 			}
-			output := bytes.Buffer{}
-			compress.Mark1Compress1(vector, &output)
-			factor := float64(output.Len()) / float64(len(vector))
+			b := bytes.Buffer{}
+			compress.Mark1Compress1(vector[4*64:], &b)
+			ab := bytes.Buffer{}
+			compress.Mark1Compress1(vector, &ab)
+			factor := float64((a.Len()+b.Len()+8*64)-ab.Len()) / float64(len(vector)+8*64)
+			if factor < 0 {
+				factor = -factor
+			}
 			if i != j && factor < mins[i].Min {
 				mins[i].Min, mins[i].Label = factor, entry.Label
 			}
